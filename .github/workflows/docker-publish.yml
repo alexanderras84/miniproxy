@@ -1,5 +1,3 @@
-DOCKERHUB_TOKEN
-
 name: Docker MultiArch Build Prod
 
 # This workflow uses actions that are not certified by GitHub.
