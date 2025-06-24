@@ -39,7 +39,7 @@ COPY generateACL.sh /generateACL.sh
 COPY dynDNSCron.sh /dynDNSCron.sh
 
 RUN chown -R miniproxy:miniproxy /etc/nginx/ && \
-    chown -R snidust:snidust /etc/miniproxy/ && \
+    chown -R miniproxy:miniproxy /etc/miniproxy/ && \
     chown -R miniproxy:miniproxy /var/log/nginx/ && \
     chown -R miniproxy:miniproxy /var/lib/nginx/ && \
     chown -R miniproxy:miniproxy /run/nginx/ && \
