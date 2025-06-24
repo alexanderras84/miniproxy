@@ -1,5 +1,4 @@
 FROM alpine:3.20
-LABEL org.opencontainers.image.authors="seji@tihoda.de"
 ARG TARGETPLATFORM
 
 ENV ALLOWED_CLIENTS=127.0.0.1
