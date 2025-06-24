@@ -30,7 +30,7 @@ RUN apk add --no-cache jq tini curl bash gnupg procps ca-certificates openssl do
     rm -rf /var/cache/apk/*
 
 # Setup Folder(s)
-RUN mkdir -p /etc/miniproxy/ && \
+RUN mkdir -p /etc/miniproxy/
 
 # Copy Files
 COPY nginx.conf /etc/nginx/nginx.conf
