@@ -19,6 +19,6 @@ nginx_processId=$!
 sleep 5
 
 echo "==================================================================="
-echo "[INFO] Miniproxy started
+echo "[INFO] Miniproxy started"
 echo "==================================================================="
 wait $nginx_processId
