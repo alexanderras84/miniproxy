@@ -2,7 +2,7 @@
 echo "[INFO] [DynDNSCron] Regenerating ACL.."
 
 # Apply timeout to the generateACL.sh script (5 seconds or adjust as needed)
-timeout 40s bash -c "source /generateACL.sh"
+timeout 40s /bin/bash /generateACL.sh
 retVal=$?
 if [ $retVal -eq 124 ]; then
   echo "[ERROR] [DynDNSCron] generateACL.sh timed out!"
