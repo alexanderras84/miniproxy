@@ -5,42 +5,51 @@ export DYNDNS_CRON_ENABLED=false
 function read_acl () {
   for i in "${client_list[@]}"
   do
-    /usr/bin/ipcalc -cs "$i"
+    # Time-bound ipcalc to 5 seconds
+    timeout 5s /usr/bin/ipcalc -cs "$i"
     retVal=$?
     if [ $retVal -eq 0 ]; then
       CLIENTS+=( "${i}" )
     else
-      RESOLVE_RESULT=$(/usr/bin/dog --json "${i}" | jq -r '.responses[].answers | map(select(.type == "A")) | first | .address')
+      # Time-bound the entire DNS resolution + jq pipeline
+      RESOLVE_RESULT=$(timeout 5s bash -c "/usr/bin/dog --json '${i}' | jq -r '.responses[].answers | map(select(.type == \"A\")) | first | .address'")
       retVal=$?
-      if [ $retVal -eq 0 ]; then
+      if [ $retVal -eq 0 ] && [ -n "$RESOLVE_RESULT" ]; then
         export DYNDNS_CRON_ENABLED=true
         CLIENTS+=( "${RESOLVE_RESULT}" )
       else
-        echo "[ERROR] Could not resolve '${i}' => Skipping"
+        echo "[ERROR] Could not resolve '${i}' (timeout or failure) => Skipping"
       fi
     fi
   done
+
+  # Ensure 127.0.0.1 is present if dynamic DNS clients were resolved
   (echo "${client_list[@]}" | grep -q '127.0.0.1')
   localipCheck=$?
-  if [[ "$localipCheck" -eq 1 ]] && [[ "$DYNDNS_CRON_ENABLED" = true ]]; then
-    echo "[INFO] Adding '127.0.0.1' to allowed clients cause else cron reload will not work"
+  if [[ "$localipCheck" -ne 0 ]] && [[ "$DYNDNS_CRON_ENABLED" = true ]]; then
+    echo "[INFO] Adding '127.0.0.1' to allowed clients to prevent reload issues"
     CLIENTS+=( "127.0.0.1" )
   fi
 }
 
+# Determine client list source
 if [ -n "${ALLOWED_CLIENTS_FILE}" ];
 then
   if [ -f "${ALLOWED_CLIENTS_FILE}" ];
   then
     mapfile -t client_list < "$ALLOWED_CLIENTS_FILE"
   else
-    echo "[ERROR] ALLOWED_CLIENTS_FILE is set but file does not exists or is not accessible!"
+    echo "[ERROR] ALLOWED_CLIENTS_FILE is set but file does not exist or is not accessible!"
+    exit 1
   fi
 else
   IFS=', ' read -ra client_list <<< "$ALLOWED_CLIENTS"
 fi
 
+# Run ACL generation
 read_acl
+
+# Generate NGINX ACL files
 printf '%s\n' "${CLIENTS[@]}" > /etc/nginx/allowedClients.acl
 
 if [ -f "/etc/nginx/allowedClients.acl" ];
