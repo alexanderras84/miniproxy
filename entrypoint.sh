@@ -1,8 +1,5 @@
 #!/bin/bash -e
 
-echo "[INFO] Starting dnsmasq..."
-dnsmasq -C /etc/dnsmasq/dnsmasq.conf &
-
 echo "[INFO] Generating ACL..."
 set +e
 source generateACL.sh
