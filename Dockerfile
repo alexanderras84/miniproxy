@@ -34,6 +34,7 @@ RUN mkdir -p /etc/miniproxy/
 
 # Copy Files
 COPY nginx.conf /etc/nginx/nginx.conf
+COPY dnsmasq.conf /etc/dnsmasq/dnsmasq.conf
 COPY entrypoint.sh /entrypoint.sh
 COPY generateACL.sh /generateACL.sh
 COPY dynDNSCron.sh /dynDNSCron.sh
