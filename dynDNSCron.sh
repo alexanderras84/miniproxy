@@ -13,5 +13,5 @@ else
 fi
 
 echo "[INFO] [DynDNSCron] reloading nginx..."
-/usr/sbin/nginx -s reload
+timeout 10s /usr/sbin/nginx -s reload
 echo "[INFO] [DynDNSCron] nginx successfully reloaded"
