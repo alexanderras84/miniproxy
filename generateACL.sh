@@ -5,17 +5,14 @@ export DYNDNS_CRON_ENABLED=false
 function read_acl () {
   for i in "${client_list[@]}"
   do
-    # Time-bound ipcalc to 5 seconds
-    timeout 15s /usr/bin/ipcalc -cs "$i"
-    retVal=$?
-    if [ $retVal -eq 0 ]; then
+    if timeout 15s /usr/bin/ipcalc -cs "$i" >/dev/null 2>&1; then
       CLIENTS+=( "$i" )
     else
-      # Time-bound DNS resolution with proper quoting
-      RESOLVE_RESULT=$(timeout 5s bash -c "/usr/bin/dog --json \"$i\" | jq -r '.responses[].answers | map(select(.type == \"A\")) | first | .address'")
-      retVal=$?
-      if [ $retVal -eq 0 ] && [ -n "$RESOLVE_RESULT" ]; then
-        export DYNDNS_CRON_ENABLED=true
+      # DNS resolution
+      RESOLVE_RESULT=$(timeout 5s /usr/bin/dog --json "$i" 2>/dev/null | jq -r '.responses[].answers | map(select(.type == "A")) | first | .address' 2>/dev/null)
+
+      if [ -n "$RESOLVE_RESULT" ] && [[ "$RESOLVE_RESULT" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        DYNDNS_CRON_ENABLED=true
         CLIENTS+=( "$RESOLVE_RESULT" )
       else
         echo "[ERROR] Could not resolve '$i' (timeout or failure) => Skipping"
