@@ -6,7 +6,7 @@ function read_acl () {
   for i in "${client_list[@]}"
   do
     # Time-bound ipcalc to 5 seconds
-    timeout 5s /usr/bin/ipcalc -cs "$i"
+    timeout 15s /usr/bin/ipcalc -cs "$i"
     retVal=$?
     if [ $retVal -eq 0 ]; then
       CLIENTS+=( "$i" )
