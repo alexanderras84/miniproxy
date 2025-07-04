@@ -8,24 +8,37 @@ function read_acl () {
     if timeout 15s /usr/bin/ipcalc -cs "$i" >/dev/null 2>&1; then
       CLIENTS+=( "$i" )
     else
-      # Try resolving A record (IPv4)
-      RESOLVE_IPV4=$(timeout 5s /usr/bin/dog --json "$i" 2>/dev/null | jq -r '.responses[].answers | map(select(.type == "A")) | first | .address' 2>/dev/null)
+      # Resolve A records (IPv4)
+      RESOLVE_IPV4_LIST=$(timeout 5s /usr/bin/dog +short "$i" A 2>/dev/null)
 
-      # Try resolving AAAA record (IPv6)
-      RESOLVE_IPV6=$(timeout 5s /usr/bin/dog --json "$i" 2>/dev/null | jq -r '.responses[].answers | map(select(.type == "AAAA")) | first | .address' 2>/dev/null)
+      # Resolve AAAA records (IPv6)
+      RESOLVE_IPV6_LIST=$(timeout 5s /usr/bin/dog +short "$i" AAAA 2>/dev/null)
 
-      if [ -n "$RESOLVE_IPV4" ] && [[ "$RESOLVE_IPV4" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        DYNDNS_CRON_ENABLED=true
-        CLIENTS+=( "$RESOLVE_IPV4" )
-      elif [ -n "$RESOLVE_IPV6" ] && [[ "$RESOLVE_IPV6" =~ ^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$ ]]; then
-        DYNDNS_CRON_ENABLED=true
-        CLIENTS+=( "$RESOLVE_IPV6" )
-      else
+      ADDED=false
+
+      # Process all IPv4 addresses
+      while read -r ip4; do
+        if [[ "$ip4" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          DYNDNS_CRON_ENABLED=true
+          CLIENTS+=( "$ip4" )
+          ADDED=true
+        fi
+      done <<< "$RESOLVE_IPV4_LIST"
+
+      # Process all IPv6 addresses
+      while read -r ip6; do
+        if [[ "$ip6" =~ ^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$ ]]; then
+          DYNDNS_CRON_ENABLED=true
+          CLIENTS+=( "$ip6" )
+          ADDED=true
+        fi
+      done <<< "$RESOLVE_IPV6_LIST"
+
+      if [ "$ADDED" = false ]; then
         echo "[ERROR] Could not resolve '$i' (timeout or failure) => Skipping"
       fi
     fi
   done
-
 
   # Ensure 127.0.0.1 is present if dynamic DNS clients were resolved
   if ! printf '%s\n' "${client_list[@]}" | grep -q '127.0.0.1'; then
