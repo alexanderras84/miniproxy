@@ -8,31 +8,23 @@ function read_acl () {
     if timeout 15s /usr/bin/ipcalc -cs "$i" >/dev/null 2>&1; then
       CLIENTS+=( "$i" )
     else
-      # Resolve A records (IPv4)
-      RESOLVE_IPV4_LIST=$(timeout 5s /usr/bin/dog +short "$i" A 2>/dev/null)
-
-      # Resolve AAAA records (IPv6)
-      RESOLVE_IPV6_LIST=$(timeout 5s /usr/bin/dog +short "$i" AAAA 2>/dev/null)
-
       ADDED=false
 
-      # Process all IPv4 addresses
-      while read -r ip4; do
-        if [[ "$ip4" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-          DYNDNS_CRON_ENABLED=true
-          CLIENTS+=( "$ip4" )
-          ADDED=true
-        fi
-      done <<< "$RESOLVE_IPV4_LIST"
+      # Resolve A records (IPv4) - add all results
+      RESOLVE_IPV4_LIST=$(timeout 5s /usr/bin/dig +short "$i" A 2>/dev/null)
+      if [ -n "$RESOLVE_IPV4_LIST" ]; then
+        while read -r ip4; do
+          [ -n "$ip4" ] && CLIENTS+=( "$ip4" ) && DYNDNS_CRON_ENABLED=true && ADDED=true
+        done <<< "$RESOLVE_IPV4_LIST"
+      fi
 
-      # Process all IPv6 addresses
-      while read -r ip6; do
-        if [[ "$ip6" =~ ^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$ ]]; then
-          DYNDNS_CRON_ENABLED=true
-          CLIENTS+=( "$ip6" )
-          ADDED=true
-        fi
-      done <<< "$RESOLVE_IPV6_LIST"
+      # Resolve AAAA records (IPv6) - add all results after IPv4
+      RESOLVE_IPV6_LIST=$(timeout 5s /usr/bin/dig +short "$i" AAAA 2>/dev/null)
+      if [ -n "$RESOLVE_IPV6_LIST" ]; then
+        while read -r ip6; do
+          [ -n "$ip6" ] && CLIENTS+=( "$ip6" ) && DYNDNS_CRON_ENABLED=true && ADDED=true
+        done <<< "$RESOLVE_IPV6_LIST"
+      fi
 
       if [ "$ADDED" = false ]; then
         echo "[ERROR] Could not resolve '$i' (timeout or failure) => Skipping"
