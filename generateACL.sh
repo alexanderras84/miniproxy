@@ -18,7 +18,7 @@ function read_acl () {
         done <<< "$RESOLVE_IPV4_LIST"
       fi
 
-      # Resolve AAAA records (IPv6) - add all results after IPv4
+      # Resolve AAAA records (IPv6) - add all results
       RESOLVE_IPV6_LIST=$(timeout 5s /usr/bin/dig +short "$i" AAAA 2>/dev/null)
       if [ -n "$RESOLVE_IPV6_LIST" ]; then
         while read -r ip6; do
