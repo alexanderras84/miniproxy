@@ -25,7 +25,7 @@ function read_acl () {
       fi
     fi
   done
-}
+
 
   # Ensure 127.0.0.1 is present if dynamic DNS clients were resolved
   if ! printf '%s\n' "${client_list[@]}" | grep -q '127.0.0.1'; then
