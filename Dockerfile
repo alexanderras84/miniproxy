@@ -22,7 +22,7 @@ RUN apk update && apk upgrade
 RUN addgroup miniproxy && adduser -D -H -G miniproxy miniproxy
 
 # Install needed packages and clean up
-RUN apk add --no-cache jq tini curl bash gnupg procps ca-certificates openssl dog lua5.4-filesystem ipcalc libcap nginx nginx-mod-stream supercronic step-cli && \
+RUN apk add --no-cache jq tini curl bash gnupg procps ca-certificates openssl dog lua5.4-filesystem ipcalc libcap nginx nginx-mod-stream supercronic step-cli bind-tools && \
     rm -f /etc/nginx/conf.d/*.conf && \
     rm -rf /var/cache/apk/*
 
