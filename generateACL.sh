@@ -8,14 +8,20 @@ function read_acl () {
     if timeout 15s /usr/bin/ipcalc -cs "$i" >/dev/null 2>&1; then
       CLIENTS+=( "$i" )
     else
-      # Resolve A records (IPv4) - add all results
+      # Resolve A records (IPv4)
       RESOLVE_IPV4_LIST=$(timeout 5s /usr/bin/dig +short "$i" A 2>/dev/null)
-      if [ -n "$RESOLVE_IPV4_LIST" ]; then
+      # Resolve AAAA records (IPv6)
+      RESOLVE_IPV6_LIST=$(timeout 5s /usr/bin/dig +short "$i" AAAA 2>/dev/null)
+
+      if [ -n "$RESOLVE_IPV4_LIST" ] || [ -n "$RESOLVE_IPV6_LIST" ]; then
         while read -r ip4; do
           [ -n "$ip4" ] && CLIENTS+=( "$ip4" ) && DYNDNS_CRON_ENABLED=true
         done <<< "$RESOLVE_IPV4_LIST"
+        while read -r ip6; do
+          [ -n "$ip6" ] && CLIENTS+=( "$ip6" ) && DYNDNS_CRON_ENABLED=true
+        done <<< "$RESOLVE_IPV6_LIST"
       else
-        echo "[ERROR] Could not resolve A record for '$i' (timeout or failure) => Skipping"
+        echo "[ERROR] Could not resolve A or AAAA records for '$i' (timeout or failure) => Skipping"
       fi
     fi
   done
