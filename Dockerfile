@@ -10,8 +10,8 @@ ENV DYNDNS_CRON_SCHEDULE="*/1 * * * *"
 HEALTHCHECK --interval=30s --timeout=3s CMD (pgrep "nginx" > /dev/null) || exit 1
 
 # Expose Ports
-EXPOSE 8080/tcp
-EXPOSE 8443/tcp
+EXPOSE 80/tcp
+EXPOSE 443/tcp
 
 RUN echo "I'm building for $TARGETPLATFORM"
 
