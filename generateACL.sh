@@ -35,6 +35,12 @@ function read_acl () {
   fi
 }
 
+function detect_docker_ipv6_subnet () {
+  docker network inspect mininet \
+    --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' \
+    | grep -E '^fd[0-9a-fA-F:]+\/[0-9]+' || return 1
+}
+
 # Determine client list source
 if [ -n "$ALLOWED_CLIENTS_FILE" ]; then
   if [ -f "$ALLOWED_CLIENTS_FILE" ]; then
@@ -49,6 +55,15 @@ fi
 
 # Run ACL generation
 read_acl
+
+# Detect and add Docker IPv6 ULA subnet (auto-detect from 'mininet')
+DOCKER_IPV6_SUBNET=$(detect_docker_ipv6_subnet)
+if [ -n "$DOCKER_IPV6_SUBNET" ]; then
+  echo "[INFO] Adding Docker IPv6 subnet to allowlist: $DOCKER_IPV6_SUBNET"
+  CLIENTS+=( "$DOCKER_IPV6_SUBNET" )
+else
+  echo "[WARN] Could not auto-detect Docker IPv6 subnet — skipping"
+fi
 
 # Generate NGINX ACL files
 printf '%s\n' "${CLIENTS[@]}" > /etc/nginx/allowedClients.acl
