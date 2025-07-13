@@ -36,9 +36,8 @@ function read_acl () {
 }
 
 function detect_docker_ipv6_subnet () {
-  docker network inspect mininet \
-    --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' \
-    | grep -E '^fd[0-9a-fA-F:]+\/[0-9]+' || return 1
+  docker network inspect mininet --format '{{range .IPAM.Config}}{{.Subnet}}{{"\n"}}{{end}}' \
+    | grep '^fd' | head -n1 || return 1
 }
 
 # Determine client list source
