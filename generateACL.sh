@@ -52,7 +52,7 @@ read_acl
 
 # Hardcode Docker IPv6 subnet to allowed clients
 echo "[INFO] Adding hardcoded Docker IPv6 subnet to allowlist: fd00:beef:dead:1::/64"
-CLIENTS+=( "fd00:beef:dead:1::/64" )
+CLIENTS+=( "fd00:beef:cafe::/64" )
 
 # Generate NGINX ACL files
 printf '%s\n' "${CLIENTS[@]}" > /etc/nginx/allowedClients.acl
