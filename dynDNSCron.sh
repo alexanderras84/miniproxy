@@ -12,6 +12,6 @@ else
   echo "[INFO] [DynDNSCron] ACL regenerated!"
 fi
 
-echo "[INFO] [DynDNSCron] reloading nginx..."
+# echo "[INFO] [DynDNSCron] reloading nginx..."
 timeout 10s /usr/sbin/nginx -s reload
 echo "[INFO] [DynDNSCron] nginx successfully reloaded"
