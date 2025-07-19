@@ -29,7 +29,7 @@ function read_acl () {
   # Ensure 127.0.0.1 is present if dynamic DNS clients were resolved
   if ! printf '%s\n' "${client_list[@]}" | grep -q '127.0.0.1'; then
     if [ "$DYNDNS_CRON_ENABLED" = true ]; then
-      echo "[INFO] Adding '127.0.0.1' to allowed clients to prevent reload issues"
+     # echo "[INFO] Adding '127.0.0.1' to allowed clients to prevent reload issues"
       CLIENTS+=( "127.0.0.1" )
     fi
   fi
@@ -51,7 +51,7 @@ fi
 read_acl
 
 # Hardcode Docker IPv6 subnet to allowed clients
-echo "[INFO] Adding hardcoded Docker IPv6 subnet to allowlist: fd00:beef:dead:1::/64"
+# echo "[INFO] Adding hardcoded Docker IPv6 subnet to allowlist: fd00:beef:dead:1::/64"
 CLIENTS+=( "fd00:beef:cafe::/64" )
 
 # Generate NGINX ACL files
